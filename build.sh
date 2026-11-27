@@ -16,9 +16,9 @@ cd "$ROOT"
 
 SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
 yes | "$SDKM" --licenses > /dev/null || true
-"$SDKM" "platform-tools" "build-tools;34.0.0" "platforms;android-34" || true
-ls "$ANDROID_HOME" "$ANDROID_HOME/build-tools"
+"$SDKM" "platform-tools" "build-tools;34.0.0" "platforms;android-34" > /dev/null || true
 
+rm -f "$HOME/debug.keystore"
 keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore "$HOME/debug.keystore" -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999 -deststoretype pkcs12
 mkdir -p "$HOME/.config/godot"
 cat > "$HOME/.config/godot/editor_settings-4.3.tres" <<EOF
@@ -27,16 +27,13 @@ cat > "$HOME/.config/godot/editor_settings-4.3.tres" <<EOF
 [resource]
 export/android/java_sdk_path = "$JAVA_HOME"
 export/android/android_sdk_path = "$ANDROID_HOME"
-export/android/debug_keystore = "$HOME/debug.keystore"
-export/android/debug_keystore_user = "androiddebugkey"
-export/android/debug_keystore_pass = "android"
 EOF
 cp "$HOME/.config/godot/editor_settings-4.3.tres" "$HOME/.config/godot/editor_settings-4.tres"
-export GODOT_ANDROID_KEYSTORE_DEBUG_PATH="$HOME/debug.keystore"
-export GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey
-export GODOT_ANDROID_KEYSTORE_DEBUG_PASS=android
+
+printf 'keystore/debug="%s/debug.keystore"\nkeystore/debug_user="androiddebugkey"\nkeystore/debug_password="android"\n' "$HOME" >> "$ROOT/export_presets.cfg"
+cat "$ROOT/export_presets.cfg"
 
 "$GODOT" --headless --path "$ROOT" --editor --quit || true
-"$GODOT" --headless --path "$ROOT" --quit-after 120 || true
+"$GODOT" --headless --path "$ROOT" --quit-after 120 2>&1 | grep -v -e 'Parameter "m"' -e mesh_get_surface_count | head -40 || true
 "$GODOT" --headless --path "$ROOT" --export-debug "Android" "$ROOT/build/pantograph-sim.apk"
 ls -l "$ROOT/build"
