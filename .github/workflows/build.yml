@@ -19,40 +19,27 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - uses: chickensoft-games/setup-godot@v2
-        with:
-          version: 4.3.0
-          use-dotnet: false
-          include-templates: true
-
-      - name: Android SDK
+      - name: Build
         run: |
-          SDKM=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-          yes | $SDKM --licenses > /dev/null || true
-          $SDKM "platform-tools" "build-tools;34.0.0" "platforms;android-34" "cmdline-tools;latest" "cmake;3.10.2.4988404" "ndk;23.2.8568313" > /dev/null
+          touch build.log
+          bash build.sh > build.log 2>&1 || echo "build.sh failed"
+          tail -n 40 build.log
 
-      - name: Debug keystore and Godot settings
+      - name: Publish log
+        if: always()
         run: |
-          keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore $HOME/debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999 -deststoretype pkcs12
-          mkdir -p ~/.config/godot
-          cat > ~/.config/godot/editor_settings-4.tres <<EOF
-          [gd_resource type="EditorSettings" format=3]
+          mkdir -p /tmp/l
+          cp build.log /tmp/l/build.log || true
+          cd /tmp/l
+          git init -q -b ci-log
+          git config user.email ci@example.com
+          git config user.name ci
+          git add .
+          git commit -qm log
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-log
 
-          [resource]
-          export/android/java_sdk_path = "$JAVA_HOME"
-          export/android/android_sdk_path = "$ANDROID_HOME"
-          EOF
-          cp ~/.config/godot/editor_settings-4.tres ~/.config/godot/editor_settings-4.3.tres
-
-      - name: Export APK
-        run: |
-          export GODOT_ANDROID_KEYSTORE_DEBUG_PATH=$HOME/debug.keystore
-          export GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey
-          export GODOT_ANDROID_KEYSTORE_DEBUG_PASS=android
-          mkdir -p build
-          godot --headless --editor --quit || true
-          godot --headless --export-debug "Android" build/pantograph-sim.apk
-          ls -l build
+      - name: Verify APK
+        run: test -f build/pantograph-sim.apk
 
       - uses: actions/upload-artifact@v4
         with:
