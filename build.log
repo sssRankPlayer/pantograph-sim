@@ -1,0 +1,81 @@
+++ pwd
++ ROOT=/home/runner/work/pantograph-sim/pantograph-sim
++ GV=4.3-stable
++ mkdir -p /home/runner/godot /home/runner/work/pantograph-sim/pantograph-sim/build
++ cd /home/runner/godot
++ wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
++ wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
++ unzip -q Godot_v4.3-stable_linux.x86_64.zip
++ unzip -q Godot_v4.3-stable_export_templates.tpz
++ mkdir -p /home/runner/.local/share/godot/export_templates/4.3.stable
++ mv templates/android_debug.apk templates/android_release.apk templates/android_source.zip templates/ios.zip templates/linux_debug.arm32 templates/linux_debug.arm64 templates/linux_debug.x86_32 templates/linux_debug.x86_64 templates/linux_release.arm32 templates/linux_release.arm64 templates/linux_release.x86_32 templates/linux_release.x86_64 templates/macos.zip templates/version.txt templates/web_debug.zip templates/web_dlink_debug.zip templates/web_dlink_nothreads_debug.zip templates/web_dlink_nothreads_release.zip templates/web_dlink_release.zip templates/web_nothreads_debug.zip templates/web_nothreads_release.zip templates/web_release.zip templates/windows_debug_arm64.exe templates/windows_debug_arm64_console.exe templates/windows_debug_x86_32.exe templates/windows_debug_x86_32_console.exe templates/windows_debug_x86_64.exe templates/windows_debug_x86_64_console.exe templates/windows_release_arm64.exe templates/windows_release_arm64_console.exe templates/windows_release_x86_32.exe templates/windows_release_x86_32_console.exe templates/windows_release_x86_64.exe templates/windows_release_x86_64_console.exe /home/runner/.local/share/godot/export_templates/4.3.stable/
++ GODOT=/home/runner/godot/Godot_v4.3-stable_linux.x86_64
++ chmod +x /home/runner/godot/Godot_v4.3-stable_linux.x86_64
++ cd /home/runner/work/pantograph-sim/pantograph-sim
++ SDKM=/usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager
++ yes
++ /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+yes: standard output: Broken pipe
++ /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager platform-tools 'build-tools;34.0.0' 'platforms;android-34'
++ rm -f /home/runner/debug.keystore
++ keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore /home/runner/debug.keystore -storepass android -dname 'CN=Android Debug,O=Android,C=US' -validity 9999 -deststoretype pkcs12
+Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 9,999 days
+	for: CN=Android Debug, O=Android, C=US
++ mkdir -p /home/runner/.config/godot
++ cat
++ cp /home/runner/.config/godot/editor_settings-4.3.tres /home/runner/.config/godot/editor_settings-4.tres
++ printf 'keystore/debug="%s/debug.keystore"\nkeystore/debug_user="androiddebugkey"\nkeystore/debug_password="android"\n' /home/runner
++ cat /home/runner/work/pantograph-sim/pantograph-sim/export_presets.cfg
+[preset.0]
+
+name="Android"
+platform="Android"
+runnable=true
+advanced_options=false
+dedicated_server=false
+custom_features=""
+export_filter="all_resources"
+include_filter=""
+exclude_filter=""
+export_path="build/pantograph-sim.apk"
+encryption_include_filters=""
+encryption_exclude_filters=""
+encrypt_pck=false
+encrypt_directory=false
+
+[preset.0.options]
+
+gradle_build/use_gradle_build=false
+package/unique_name="com.sssrankplayer.pantographsim"
+package/name="Pantograph Sim"
+package/signed=true
+package/show_in_app_library=true
+screen/immersive_mode=true
+version/code=1
+version/name="1.0"
+architectures/armeabi-v7a=false
+architectures/arm64-v8a=true
+architectures/x86=false
+architectures/x86_64=false
+keystore/debug="/home/runner/debug.keystore"
+keystore/debug_user="androiddebugkey"
+keystore/debug_password="android"
++ /home/runner/godot/Godot_v4.3-stable_linux.x86_64 --headless --path /home/runner/work/pantograph-sim/pantograph-sim --editor --quit
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
++ /home/runner/godot/Godot_v4.3-stable_linux.x86_64 --headless --path /home/runner/work/pantograph-sim/pantograph-sim --quit-after 120
++ grep -v -e 'Parameter "m"' -e mesh_get_surface_count
++ head -40
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
++ /home/runner/godot/Godot_v4.3-stable_linux.x86_64 --headless --path /home/runner/work/pantograph-sim/pantograph-sim --export-debug Android /home/runner/work/pantograph-sim/pantograph-sim/build/pantograph-sim.apk
+Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
+ERROR: Cannot export project with preset "Android" due to configuration errors:
+
+   at: _fs_changed (editor/editor_node.cpp:1012)
+ERROR: Project export for preset "Android" failed.
+   at: _fs_changed (editor/editor_node.cpp:1028)
+cannot connect to daemon at tcp:5037: Connection refused
++ ls -l /home/runner/work/pantograph-sim/pantograph-sim/build
+total 0
