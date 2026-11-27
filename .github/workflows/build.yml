@@ -5,22 +5,63 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  apk:
     runs-on: ubuntu-22.04
-    container:
-      image: barichello/godot-ci:4.2.2
     steps:
       - uses: actions/checkout@v4
-      - name: Setup templates
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.3.0
+          use-dotnet: false
+          include-templates: true
+
+      - name: Android SDK
         run: |
-          mkdir -v -p ~/.local/share/godot/export_templates/
-          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          SDKM=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+          yes | $SDKM --licenses > /dev/null || true
+          $SDKM "platform-tools" "build-tools;34.0.0" "platforms;android-34" "cmdline-tools;latest" "cmake;3.10.2.4988404" "ndk;23.2.8568313" > /dev/null
+
+      - name: Debug keystore and Godot settings
+        run: |
+          keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore $HOME/debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999 -deststoretype pkcs12
+          mkdir -p ~/.config/godot
+          cat > ~/.config/godot/editor_settings-4.tres <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/java_sdk_path = "$JAVA_HOME"
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          EOF
+          cp ~/.config/godot/editor_settings-4.tres ~/.config/godot/editor_settings-4.3.tres
+
       - name: Export APK
         run: |
-          mkdir -v -p build
-          godot --headless --verbose --export-debug "Android" build/pantograph-sim.apk
+          export GODOT_ANDROID_KEYSTORE_DEBUG_PATH=$HOME/debug.keystore
+          export GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey
+          export GODOT_ANDROID_KEYSTORE_DEBUG_PASS=android
+          mkdir -p build
+          godot --headless --editor --quit || true
+          godot --headless --export-debug "Android" build/pantograph-sim.apk
+          ls -l build
+
       - uses: actions/upload-artifact@v4
         with:
           name: pantograph-sim-apk
           path: build/pantograph-sim.apk
+
+      - uses: softprops/action-gh-release@v2
+        continue-on-error: true
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Build ${{ github.run_number }}
+          files: build/pantograph-sim.apk
